@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: massmail
+      MYSQL_USER: massmail
+      MYSQL_PASSWORD: massmailPassword
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  # Backend API
+  backend:
+    build: ./backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: massmail
+      DB_PASSWORD: massmailPassword
+      DB_NAME: massmail
+      PORT: 3000
+    depends_on:
+      - db
+
+  # Background Worker
+  worker:
+    build: ./worker
+    restart: always
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: massmail
+      DB_PASSWORD: massmailPassword
+      DB_NAME: massmail
+    depends_on:
+      - db
+
+  # Frontend Web Server
+  frontend:
+    build: ./frontend
+    restart: always
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  mysql_data:

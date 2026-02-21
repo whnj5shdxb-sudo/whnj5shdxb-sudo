@@ -1,0 +1,2 @@
+USE massmail;
+DESCRIBE users;
